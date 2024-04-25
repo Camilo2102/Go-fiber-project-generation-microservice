@@ -14,7 +14,7 @@ type githubUtils struct {
 }
 
 type GithubUtils interface {
-	CopyAutoCrudProjectToUserFolder(req request.ProjectInfo, msgChan chan response.ProjectCreateInfo)
+	CopyAutoCrudProjectToUserFolder(module request.Module, userId string, msgChan chan response.ProjectCreateInfo)
 }
 
 func NewGithubUtils(cfg *config.Config, fileUtils FileUtils) GithubUtils {
@@ -28,8 +28,8 @@ func NewGithubUtils(cfg *config.Config, fileUtils FileUtils) GithubUtils {
 	}
 }
 
-func (g *githubUtils) CopyAutoCrudProjectToUserFolder(req request.ProjectInfo, msgChan chan response.ProjectCreateInfo) {
-	fileInitializeStatus := g.fileUtils.CreateUserFolder(req.UserId) == nil
+func (g *githubUtils) CopyAutoCrudProjectToUserFolder(module request.Module, userId string, msgChan chan response.ProjectCreateInfo) {
+	fileInitializeStatus := g.fileUtils.CreateUserFolder(userId) == nil
 
 	folderInitializeResponse := response.ProjectCreateInfo{
 		Phase:   1,
@@ -43,7 +43,7 @@ func (g *githubUtils) CopyAutoCrudProjectToUserFolder(req request.ProjectInfo, m
 		return
 	}
 
-	projectCopyStatus := g.fileUtils.CreateProjectCopyForUser(req.ProjectType, req.UserId) == nil
+	projectCopyStatus := g.fileUtils.CreateProjectCopyForUser(module.ModuleName, userId) == nil
 
 	msgChan <- response.ProjectCreateInfo{
 		Phase:   2,
@@ -55,7 +55,7 @@ func (g *githubUtils) CopyAutoCrudProjectToUserFolder(req request.ProjectInfo, m
 		return
 	}
 
-	neededFilesCreationStatus := g.fileUtils.CreateModelsInAutoCrudProject(req.Models, req.UserId) == nil
+	neededFilesCreationStatus := g.fileUtils.CreateModelsInAutoCrudProject(module.Models, userId) == nil
 
 	msgChan <- response.ProjectCreateInfo{
 		Phase:   3,
@@ -67,7 +67,7 @@ func (g *githubUtils) CopyAutoCrudProjectToUserFolder(req request.ProjectInfo, m
 		return
 	}
 
-	dockerizeStatus := g.fileUtils.DockerizeProject(req.ProjectType, req.UserId) == nil
+	dockerizeStatus := g.fileUtils.DockerizeProject(module.ModuleName, userId) == nil
 
 	msgChan <- response.ProjectCreateInfo{
 		Phase:   3,

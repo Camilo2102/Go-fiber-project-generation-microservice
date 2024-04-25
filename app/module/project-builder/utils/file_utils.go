@@ -21,7 +21,7 @@ type FileUtils interface {
 	InitializeFolders()
 	CloneGithubProjects()
 	CreateProjectCopyForUser(projectType string, userId string) (error error)
-	CreateModelsInAutoCrudProject(models []request.ModelInfo, userId string) (error error)
+	CreateModelsInAutoCrudProject(models []request.Model, userId string) (error error)
 	DockerizeProject(projectType string, userId string) (error error)
 	CreateUserFolder(userId string) (error error)
 }
@@ -61,7 +61,7 @@ func (f *fileUtils) CreateProjectCopyForUser(projectType string, userId string) 
 	return nil
 }
 
-func (f *fileUtils) CreateModelsInAutoCrudProject(models []request.ModelInfo, userId string) (error error) {
+func (f *fileUtils) CreateModelsInAutoCrudProject(models []request.Model, userId string) (error error) {
 	userProjectCopy := f.getUserProjectPathCopy(f.cfg.Github.AutoCrudUrl, userId)
 
 	modelPath := filepath.Join(userProjectCopy, f.cfg.Folders.AutoCrudModelFolder, "DemoModel.kt")
@@ -99,18 +99,18 @@ func (f *fileUtils) DockerizeProject(projectType string, userId string) (error e
 	return nil
 }
 
-func (f *fileUtils) createProjectFiles(models []request.ModelInfo, modelTemplate string, repositoryTemplate string, userCopyPath string) {
+func (f *fileUtils) createProjectFiles(models []request.Model, modelTemplate string, repositoryTemplate string, userCopyPath string) {
 	var wg sync.WaitGroup
 
 	wg.Add(len(models) * 2)
 
 	for _, model := range models {
-		go func(m request.ModelInfo) {
+		go func(m request.Model) {
 			defer wg.Done()
 			f.replaceInDemoModelTemplate(m, modelTemplate, userCopyPath)
 		}(model)
 
-		go func(m request.ModelInfo) {
+		go func(m request.Model) {
 			defer wg.Done()
 			f.replaceInDemoRepositoryTemplate(m, repositoryTemplate, userCopyPath)
 		}(model)
@@ -118,7 +118,7 @@ func (f *fileUtils) createProjectFiles(models []request.ModelInfo, modelTemplate
 	wg.Wait()
 }
 
-func (f *fileUtils) replaceInDemoRepositoryTemplate(model request.ModelInfo, template string, userCopyPath string) {
+func (f *fileUtils) replaceInDemoRepositoryTemplate(model request.Model, template string, userCopyPath string) {
 	templateRepositoryName := "Demo"
 
 	repositoryReplaced := strings.Replace(template, templateRepositoryName, model.ModelName, -1)
@@ -133,7 +133,7 @@ func (f *fileUtils) replaceInDemoRepositoryTemplate(model request.ModelInfo, tem
 	log.Info().Msgf("Created file %s", newRepositoryPath)
 }
 
-func (f *fileUtils) replaceInDemoModelTemplate(model request.ModelInfo, template string, userCopyPath string) {
+func (f *fileUtils) replaceInDemoModelTemplate(model request.Model, template string, userCopyPath string) {
 	templateModelName := "Demo"
 	templateModelAttributes := "val replace: String = \"\""
 

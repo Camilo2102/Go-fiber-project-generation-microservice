@@ -1,13 +1,18 @@
 package request
 
 type ProjectInfo struct {
-	UserId      string      `json:"userId"`
-	ProjectName string      `json:"projectName"`
-	ProjectType string      `json:"projectType"`
-	Models      []ModelInfo `json:"models,omitempty"`
+	UserId      string   `json:"userId"`
+	ProjectName string   `json:"projectName"`
+	Modules     []Module `json:"modules,omitempty"`
 }
 
-type ModelInfo struct {
+type Module struct {
+	ModuleName string  `json:"moduleName"`
+	Config     string  `json:"config"`
+	Models     []Model `json:"models,omitempty"`
+}
+
+type Model struct {
 	ModelName     string      `json:"modelName"`
 	AttributeList []Attribute `json:"attributeList"`
 }

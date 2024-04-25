@@ -9,7 +9,9 @@ import (
 	"github.com/bangadam/go-fiber-starter/app/module/project-builder/service"
 	"github.com/bangadam/go-fiber-starter/utils/response"
 	"github.com/gofiber/fiber/v2"
+	"github.com/rs/zerolog/log"
 	"github.com/valyala/fasthttp"
+	"sync"
 	"time"
 )
 
@@ -35,19 +37,40 @@ func (_i *projectBuilderController) CreateAutoCrudProject(c *fiber.Ctx) error {
 
 	msgChan := make(chan response2.ProjectCreateInfo)
 
+	functionMap := map[string]func(module *request.Module) (*response2.ProjectCreateInfo, error){
+		"Springboot-kotlin-autogenerable-crud": func(module *request.Module) (*response2.ProjectCreateInfo, error) {
+			return _i.projectBuilderService.CreateAutoCrudProject(*module, req.UserId, msgChan)
+		},
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(len(req.Modules))
+
 	go func() {
-		_, err := _i.projectBuilderService.CreateAutoCrudProject(*req, msgChan)
-		if err != nil {
-			close(msgChan)
-			return
+		defer close(msgChan)
+
+		for _, module := range req.Modules {
+			module := module
+			go func(moduleName string) {
+				defer wg.Done()
+				if fn, ok := functionMap[moduleName]; ok {
+					_, err := fn(&module)
+					if err != nil {
+						return
+					}
+				} else {
+					log.Info().Msg("errr")
+				}
+			}(module.ModuleName)
 		}
+
+		wg.Wait()
 
 		msgChan <- response2.ProjectCreateInfo{
 			Status:  true,
 			Phase:   4,
 			Message: "Project generated successfully",
 		}
-		close(msgChan)
 	}()
 
 	c.Set("Content-Type", "text/event-stream")
