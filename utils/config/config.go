@@ -27,6 +27,7 @@ type app = struct {
 		CertFile string `toml:"cert-file"`
 		KeyFile  string `toml:"key-file"`
 	}
+	Cors string `toml:"cors"`
 }
 
 // log struct config
@@ -39,6 +40,11 @@ type logger = struct {
 type github = struct {
 	GithubUri   string `toml:"github-uri"`
 	AutoCrudUrl string `toml:"auto-crud-url"`
+}
+
+type docker = struct {
+	User     string `toml:"user"`
+	Password string `toml:"password"`
 }
 
 type folders = struct {
@@ -91,6 +97,7 @@ type Config struct {
 	App        app
 	Logger     logger
 	Github     github
+	Docker     docker
 	Folders    folders
 	Middleware middleware
 }

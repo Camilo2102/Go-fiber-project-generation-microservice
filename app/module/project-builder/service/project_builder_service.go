@@ -11,7 +11,7 @@ type projectBuilderService struct {
 }
 
 type ProjectBuildService interface {
-	CreateAutoCrudProject(req request.ProjectInfo) (res *response.ProjectCreateInfo, err error)
+	CreateAutoCrudProject(req request.ProjectInfo, msgChan chan response.ProjectCreateInfo) (res *response.ProjectCreateInfo, err error)
 }
 
 func NewProjectBuildService(githubUtils utils.GithubUtils) ProjectBuildService {
@@ -20,8 +20,8 @@ func NewProjectBuildService(githubUtils utils.GithubUtils) ProjectBuildService {
 	}
 }
 
-func (p *projectBuilderService) CreateAutoCrudProject(req request.ProjectInfo) (res *response.ProjectCreateInfo, err error) {
-	p.githubUtils.CopyAutoCrudProjectToUserFolder(req)
+func (p *projectBuilderService) CreateAutoCrudProject(req request.ProjectInfo, msgChan chan response.ProjectCreateInfo) (res *response.ProjectCreateInfo, err error) {
+	p.githubUtils.CopyAutoCrudProjectToUserFolder(req, msgChan)
 
 	return &response.ProjectCreateInfo{
 		Status: true,

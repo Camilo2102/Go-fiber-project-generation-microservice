@@ -29,11 +29,9 @@ var NewProjectBuilderModule = fx.Options(
 )
 
 func (_i *ProjectBuilderRouter) RegisterProjectBuilderRoutes() {
-	// define controllers
 	projectBuilderController := _i.Controller.ProjectBuilder
 
-	// define routes
-	_i.App.Route("/projectBuilder", func(router fiber.Router) {
+	_i.App.Route("/api/projectBuilder", func(router fiber.Router) {
 		router.Post("/generateCrudProject", projectBuilderController.CreateAutoCrudProject)
 	})
 }

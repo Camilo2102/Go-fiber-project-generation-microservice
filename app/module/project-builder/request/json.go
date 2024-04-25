@@ -2,6 +2,7 @@ package request
 
 type ProjectInfo struct {
 	UserId      string      `json:"userId"`
+	ProjectName string      `json:"projectName"`
 	ProjectType string      `json:"projectType"`
 	Models      []ModelInfo `json:"models,omitempty"`
 }

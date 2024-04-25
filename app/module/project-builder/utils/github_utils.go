@@ -2,6 +2,7 @@ package utils
 
 import (
 	"github.com/bangadam/go-fiber-starter/app/module/project-builder/request"
+	"github.com/bangadam/go-fiber-starter/app/module/project-builder/response"
 	"github.com/bangadam/go-fiber-starter/utils/config"
 )
 
@@ -13,7 +14,7 @@ type githubUtils struct {
 }
 
 type GithubUtils interface {
-	CopyAutoCrudProjectToUserFolder(req request.ProjectInfo)
+	CopyAutoCrudProjectToUserFolder(req request.ProjectInfo, msgChan chan response.ProjectCreateInfo)
 }
 
 func NewGithubUtils(cfg *config.Config, fileUtils FileUtils) GithubUtils {
@@ -27,8 +28,51 @@ func NewGithubUtils(cfg *config.Config, fileUtils FileUtils) GithubUtils {
 	}
 }
 
-func (g *githubUtils) CopyAutoCrudProjectToUserFolder(req request.ProjectInfo) {
-	g.fileUtils.CreateUserFolder(req.UserId)
-	g.fileUtils.CreateProjectCopyForUser(req.ProjectType, req.UserId)
-	g.fileUtils.CreateModelsInAutoCrudProject(req.Models, req.UserId)
+func (g *githubUtils) CopyAutoCrudProjectToUserFolder(req request.ProjectInfo, msgChan chan response.ProjectCreateInfo) {
+	fileInitializeStatus := g.fileUtils.CreateUserFolder(req.UserId) == nil
+
+	folderInitializeResponse := response.ProjectCreateInfo{
+		Phase:   1,
+		Status:  fileInitializeStatus,
+		Message: "Folders initialized",
+	}
+
+	msgChan <- folderInitializeResponse
+
+	if !fileInitializeStatus {
+		return
+	}
+
+	projectCopyStatus := g.fileUtils.CreateProjectCopyForUser(req.ProjectType, req.UserId) == nil
+
+	msgChan <- response.ProjectCreateInfo{
+		Phase:   2,
+		Status:  projectCopyStatus,
+		Message: "Project copied",
+	}
+
+	if !projectCopyStatus {
+		return
+	}
+
+	neededFilesCreationStatus := g.fileUtils.CreateModelsInAutoCrudProject(req.Models, req.UserId) == nil
+
+	msgChan <- response.ProjectCreateInfo{
+		Phase:   3,
+		Status:  neededFilesCreationStatus,
+		Message: "Requiered files created",
+	}
+
+	if !neededFilesCreationStatus {
+		return
+	}
+
+	dockerizeStatus := g.fileUtils.DockerizeProject(req.ProjectType, req.UserId) == nil
+
+	msgChan <- response.ProjectCreateInfo{
+		Phase:   3,
+		Status:  dockerizeStatus,
+		Message: "Project dockerized and published",
+	}
+
 }

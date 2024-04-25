@@ -1,11 +1,12 @@
 # Configuration vars for cmd/app
 [app]
 name = "Fiber starter"
-port = ":6000"
+port = ":5860"
 idle-timeout = 5 # As seconds
 print-routes = false
 prefork = true
 production = false
+cors = "http://localhost:3000"
 
 [app.tls]
 enable = false
@@ -19,7 +20,11 @@ prettier = true
 
 [github]
 github-uri = "https://github.com/Camilo2102/"
-auto-crud-url = "Springboot-automatic-crud-for-mongodb"
+auto-crud-url = "Springboot-kotlin-autogenerable-crud"
+
+[docker]
+user = "cammd21"
+password = "R7PXqqH2."
 
 [folders]
 root-folder = "C://archivos-tesis/"
